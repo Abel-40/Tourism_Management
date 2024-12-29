@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views.user_views import UserApiView,UserProfileApiView,TourGuiderApiView
 from .views.packages_views import PackagesApiViews,SubPackageApiView,PackageReviewApiView
 from .views.bankist_view import WithdrawApiView,CreateBankAccount,DepositApiView,BankAccountsApiView
-from .views.booking_views import BookingApiView,BookingPaymentApiView
+from .views.booking_views import BookingApiView,BookingPaymentApiView,BookingPackageApiView
 router = DefaultRouter()
 router.register(r'user',UserApiView)
 router.register(r'packages',PackagesApiViews)
@@ -18,7 +18,8 @@ urlpatterns = [
   path('api/bankaccount/create_bank_account/',CreateBankAccount.as_view(),name='create_bank_account'),
   path('api/bankaccount/deposit/',DepositApiView.as_view(),name='deposit'),
   path('api/bankaccounts/',BankAccountsApiView.as_view(),name='bank_accounts'),
-  path('api/booking_payment/',BookingPaymentApiView.as_view(),name='bank_accounts')
+  path('api/booking_payment/',BookingPaymentApiView.as_view(),name='bank_accounts'),
+  path('api/booking_package/',BookingPackageApiView.as_view(),name='booking_package')
   
 ]
 

@@ -25,5 +25,13 @@ class Booking(models.Model):
     self.total_price = self.number_of_people * package_price
     return super().save(*args,**kwargs)
   
+  class Meta:
+    constraints = [
+        models.UniqueConstraint(fields=['user', 'package'], name='unique_user_package_booking')
+    ]
+
+  
+  
+  
   def __str__(self):
     return f"{self.user.username} Book package {self.package.package_name}"

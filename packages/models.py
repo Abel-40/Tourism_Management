@@ -13,7 +13,7 @@ class Packages(models.Model):
       return super().get_queryset().filter(status = Packages.Status.PUBLISHED)
   
   
-  package_name = models.CharField(max_length=250)
+  package_name = models.CharField(unique=True,max_length=250)
   package_description = models.TextField()
   price = models.DecimalField(max_digits=10,decimal_places=2)
   days_of_tour = models.PositiveIntegerField()

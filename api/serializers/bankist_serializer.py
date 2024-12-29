@@ -6,7 +6,7 @@ class TransferSerializer(serializers.Serializer):
   reciver_account_number = serializers.CharField(max_length=14)
   pin = serializers.CharField(max_length=120)
   def validate(self, attrs):
-    if not len(attrs['reciver_account_number']) == 14:
+    if not len(attrs.get('reciver_account_number')) == 14:
       raise serializers.ValidationError("account_number digits must be 14")
     return attrs
   def validate_amount(self,value):
@@ -19,7 +19,7 @@ class DepositSeriaizer(serializers.Serializer):
   amount = serializers.DecimalField(max_digits=120,decimal_places=2)
   pin = serializers.CharField(max_length=120)
   def validate(self, attrs):
-    if attrs['amount'] <= 0:
+    if attrs.get('amount')<= 0:
       raise serializers.ValidationError("You can't deposit this amount")
     return attrs
 
