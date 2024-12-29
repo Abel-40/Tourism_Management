@@ -33,8 +33,6 @@ class WithdrawApiView(APIView):
             amount = serializer.validated_data['amount']
             reciver_account_number = serializer.validated_data['reciver_account_number']
             pin = serializer.validated_data['pin']
-            
-            
             if reciver_account_number == sender_bank_account.account_number:
                 return Response({"message":"you can't send to your self"},status=status.HTTP_403_FORBIDDEN)
             
