@@ -1,7 +1,7 @@
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
-from .views.user_views import UserApiView,UserProfileApiView,TourGuiderApiView
-from .views.packages_views import PackagesApiViews,SubPackageApiView,PackageReviewApiView
+from .views.user_views import UserApiView,UserProfileApiView,TourGuiderApiView,UserCreationApiView
+from .views.packages_views import PackagesApiViews,SubPackageApiView,PackageReviewApiView,GetPakcages
 from .views.bankist_view import WithdrawApiView,CreateBankAccount,DepositApiView,BankAccountsApiView
 from .views.booking_views import BookingApiView,BookingPaymentApiView,BookingPackageApiView
 router = DefaultRouter()
@@ -19,7 +19,9 @@ urlpatterns = [
   path('api/bankaccount/deposit/',DepositApiView.as_view(),name='deposit'),
   path('api/bankaccounts/',BankAccountsApiView.as_view(),name='bank_accounts'),
   path('api/booking_payment/',BookingPaymentApiView.as_view(),name='bank_accounts'),
-  path('api/booking_package/',BookingPackageApiView.as_view(),name='booking_package')
+  path('api/booking_package/',BookingPackageApiView.as_view(),name='booking_package'),
+  path('api/signup/',UserCreationApiView.as_view(),name='signup'),
+  path('api/get_packages/',GetPakcages.as_view(),name='get_packages')
   
 ]
 
