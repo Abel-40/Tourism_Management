@@ -1,6 +1,7 @@
 from django.db import models
 from packages.models import Packages
 from users.models import User,TourGuider
+from django.utils.text import slugify
 # Create your models here.
 
 class Booking(models.Model):
@@ -18,11 +19,16 @@ class Booking(models.Model):
   number_of_people = models.PositiveIntegerField()
   total_price = models.DecimalField(max_digits=10,decimal_places=2)
   status = models.CharField(max_length=20,choices=Status.choices,default=Status.PENDING)
+  slug = models.SlugField(unique=True,max_length=100)
+  
+  
   objects = models.Manager()
   confirmed_bookings = ConfirmedBookings()
   def save(self, *args, **kwargs):
     package_price = self.package.price
     self.total_price = self.number_of_people * package_price
+    if not self.slug:
+      self.slug = slugify(f"{self.user.username}-book-{self.package.package_name}")
     return super().save(*args,**kwargs)
   
   class Meta:

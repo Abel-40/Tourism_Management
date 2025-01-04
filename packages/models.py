@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.utils.text import slugify
 # from users.models import User
 # Create your models here.
 
@@ -26,6 +27,13 @@ class Packages(models.Model):
   location = models.CharField(max_length=100)
   weather = models.CharField(max_length=100)
   landscape = models.CharField(max_length=100)
+  slug = models.SlugField(unique=True,max_length=100)
+
+  def save(self,*args, **kwargs):
+    if not self.slug:
+      self.slug = slugify(self.package_name)
+      super().save(*args,**kwargs)
+  
   
   objects = models.Manager()
   published = PublishedManager()
@@ -38,12 +46,21 @@ class Packages(models.Model):
   def __str__(self):
     return self.package_name
   
+class PackageImages(models.Model) :
+  package = models.ForeignKey(to=Packages,on_delete=models.CASCADE,related_name='images')
+  image = models.ImageField(upload_to='package_image/')
+  caption = models.CharField(max_length=255,blank=True,null=True)
+
+  def __str__(self):
+    return f"Image for {self.package.package_name}"
   
 class SubPackages(models.Model):
     subpackage_name = models.CharField(max_length=100)
     subpackage_description = models.TextField()
     package = models.ForeignKey(to=Packages,on_delete=models.CASCADE,related_name='subpackages')
+    subpackage_image = models.ImageField(upload_to='subpackage_image/')
     
+  
     def __str__(self):
       return self.subpackage_name
     

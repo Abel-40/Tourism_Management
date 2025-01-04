@@ -1,5 +1,6 @@
 from rest_framework import viewsets,status
 from rest_framework.views import APIView
+from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from ..serializers.user_serializers import (
@@ -28,14 +29,23 @@ class TourGuiderApiView(viewsets.ModelViewSet):
   serializer_class = TourGuiderSerializer
   
   
-class UserCreationApiView(APIView):
-  def post(self,request):
+class UserCreationApiView(viewsets.ViewSet):
+  @action(detail=False,methods=['post'])
+  def signup(self,request):
     serializer = UserSerializer(data = request.data)
     if serializer.is_valid():
       email = serializer.validated_data['email']
+      username = serializer.validated_data['username']
       if User.objects.filter(email=email).exists():
         return Response({"message":"account existed please sign in"},status=status.HTTP_403_FORBIDDEN)
-      user = serializer.save()
-      send_welcome_email(email,user.username)
-      return Response({"message":"account created successfully"},status=status.HTTP_201_CREATED)
+      
+      send_welcome_email(email,username)
+      if send_welcome_email(email,username):
+        serializer.save()
+        return Response({"message":"account created successfully"},status=status.HTTP_201_CREATED)
+      else:
+        return Response({"timeout":"please check your internet connection"},status=status.HTTP_408_REQUEST_TIMEOUT)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+  # def delete(self,request):
+  #   serial

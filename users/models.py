@@ -1,10 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager,AbstractUser
+import uuid
+from django.utils.text import slugify
 from packages.models import Packages
+
 # Create your models here.
 
 class UserManger(BaseUserManager):
-  def create_user(self,email,password=None,username=None):
+  def create_user(self,email,password,username):
     if email is None:
       raise ValueError('Email required')
     
@@ -13,7 +16,7 @@ class UserManger(BaseUserManager):
     user.set_password(password)
     user.save(using=self._db)
     return user
-  def create_superuser(self,email,password=None,username=None):
+  def create_superuser(self,email,password,username):
     user = self.create_user(email=email,password=password,username=username)
     user.is_staff = True
     user.is_superuser = True
@@ -24,9 +27,16 @@ class UserManger(BaseUserManager):
 class User(AbstractUser):
   email = models.EmailField(unique=True,max_length=200)
   username = models.CharField(max_length=100,unique=False)
+  slug = models.SlugField(unique=True,max_length=100)
+
   USERNAME_FIELD = "email"
   REQUIRED_FIELDS = ['username']
   objects= UserManger()
+  
+  def save(self, *args, **kwargs):
+    if not self.slug:
+      self.slug = slugify(f"{self.username}-{uuid.uuid4().hex[:8]}")
+    super().save(*args,**kwargs)
   
   def __str__(self):
     return self.username
