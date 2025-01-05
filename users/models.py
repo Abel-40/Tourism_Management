@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.contrib.auth.models import BaseUserManager,AbstractUser
 import uuid
 from django.utils.text import slugify
@@ -38,6 +39,10 @@ class User(AbstractUser):
       self.slug = slugify(f"{self.username}-{uuid.uuid4().hex[:8]}")
     super().save(*args,**kwargs)
   
+  def get_absolute_url(self):
+      return reverse("user-detail", kwargs={"slug":self.slug})
+  
+  
   def __str__(self):
     return self.username
   
@@ -51,11 +56,11 @@ class UserProfile(models.Model):
     ADMIN = 'AD','Admin'
     CUSTOMER = 'CU','Customer'
     TOUR_STAFF = 'TS','Tour_Staff'
-    TOUR_GUIDER = 'Tg','Tour_Guider'
-  user = models.OneToOneField(User,on_delete=models.CASCADE)
-  address = models.CharField(max_length=200)
+    TOUR_GUIDER = 'TG','Tour_Guider'
+  user = models.OneToOneField(User,on_delete=models.CASCADE,related_name='userprofile')
+  address = models.CharField(max_length=200,default='Not provided')
   profile_picture = models.ImageField(upload_to='profile_pictures/',null=True,blank=True)
-  phone_number = models.CharField(max_length=13)
+  phone_number = models.CharField(max_length=13,default="Not provided")
   role = models.CharField(max_length=2,choices=Role.choices,default=Role.CUSTOMER)
   #custom object to filter only Customers and default object
   

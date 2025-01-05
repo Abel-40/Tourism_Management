@@ -13,7 +13,7 @@ from django.utils import timezone
 class BookingApiView(viewsets.ModelViewSet):
   queryset = Booking.objects.all()
   serializer_class = BookingSerializer
-  
+  lookup_field = 'slug'
   
   
 class BookingPaymentApiView(APIView):
