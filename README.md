@@ -1,6 +1,3 @@
-Sure, here is the above text written in a markdown file format:
-
-```markdown
 # Package-Based Tourism Management System
 
 This project is a **web-based Tourism Management System** designed to streamline travel package bookings and user management for a tourism company. It integrates role-based access control, secure banking transactions, and various user-specific functionalities to provide an efficient and secure platform for customers, administrators, and tour staff.
