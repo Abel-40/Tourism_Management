@@ -25,22 +25,6 @@ from ..serializers.user_serializers import (
   )
 from django.shortcuts import get_object_or_404
 from users.views import send_welcome_email
-class UserApiView(viewsets.ModelViewSet):
-  queryset = User.objects.all()
-  serializer_class = UserSerializer
-  lookup_field = 'slug'
-  
-class UserProfileApiView(viewsets.ModelViewSet):
-  queryset = UserProfile.objects.all()
-  serializer_class = UserProfileSerializer
-  parser_classes = [MultiPartParser]
-  
-  
-class TourGuiderApiView(viewsets.ModelViewSet):
-  queryset = TourGuider.objects.all()
-  serializer_class = TourGuiderSerializer
-  
-  
 class UserCreationApiView(viewsets.ViewSet):
     lookup_field = 'slug'
     @action(detail=False, methods=['post'],permission_classes=[AllowAny],authentication_classes=[])
