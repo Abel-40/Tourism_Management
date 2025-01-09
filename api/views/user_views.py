@@ -1,10 +1,14 @@
 from rest_framework import viewsets,status
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAdminUser,IsAuthenticated,AllowAny
-from rest_framework.views import APIView
-from rest_framework.decorators import action
+from proto_tourism.api.permissions.permissions import IsTourGuider
+from rest_framework.decorators import action,permission_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
+from django.contrib.auth import authenticate
+from packages.models import Packages
 from ..serializers.user_serializers import (
   UserSerializer,
   User,
@@ -16,7 +20,7 @@ from ..serializers.user_serializers import (
   RoleAssignSerializer,
   UpdateUserInfoSerializer,
   UpadateUserProfileSerializer,
-  UserDeletionSerializer,
+  UserDeletionSerializer
   
   )
 from django.shortcuts import get_object_or_404
@@ -63,6 +67,36 @@ class UserCreationApiView(viewsets.ViewSet):
                     status=status.HTTP_408_REQUEST_TIMEOUT,
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny], authentication_classes=[])
+    def signin(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not email or not password:
+            return Response(
+                {"error": "Email and password are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Authenticate the user
+        user = authenticate(request, username=email, password=password)
+        if user is None:
+            return Response(
+                {"error": "Invalid email or password."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+                "message": "Login successful.",
+            },
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def get_users(self, request):
@@ -165,3 +199,40 @@ class UserCreationApiView(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+
+
+class TourGuiderViewSet(viewsets.ViewSet):
+    permission_classes = [IsTourGuider]
+
+    @action(detail=False, methods=['get'])
+    def tg_packages_booking_confirmed_users(self, request):
+        try:
+            tour_guider = TourGuider.objects.get(user=request.user)
+        except TourGuider.DoesNotExist:
+            return Response({"error": "Tour Guider profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = TourGuiderSerializer(tour_guider)
+        return Response(serializer.data.get('confirmed_bookings'), status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['patch'])
+    def add_note(self, request):
+        try:
+            tour_guider = TourGuider.objects.get(user=request.user)
+        except TourGuider.DoesNotExist:
+            return Response({"error": "Tour Guider profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        package_id = request.data.get('package_id')
+        note = request.data.get('note')
+
+        if not package_id or not note:
+            return Response({"error": "Both 'package_id' and 'note' are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            package = Packages.objects.get(id=package_id, assigned_to=tour_guider)
+        except Packages.DoesNotExist:
+            return Response({"error": "Package not found or not assigned to you."}, status=status.HTTP_404_NOT_FOUND)
+
+        package.note = note
+        package.save()
+
+        return Response({"message": "Note added successfully."}, status=status.HTTP_200_OK)

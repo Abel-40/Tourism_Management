@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404,get_list_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser,IsAuthenticated,AllowAny
-from packages.permissions import IsAdminOrTourStaff,IsCustomer,IsTourGuider
+from proto_tourism.api.permissions.permissions import IsAdminOrTourStaff,IsCustomer,IsTourGuider
 from ..serializers.packages_serializers import (
   PackageSerializer,
   Packages,
@@ -18,7 +18,7 @@ from ..serializers.user_serializers import TourGuider,User,UserProfile
 
 class PackageApiView(viewsets.ViewSet):
   lookup_field = 'slug'
-  @action(detail=False,methods=['get'],permission_classes=[AllowAny])
+  @action(detail=False,methods=['get'],permission_classes=[AllowAny],authentication_classes=[])
   def get_packages(self,request):
     packages = Packages.published.all()
     serializer = PackageSerializer(packages,many=True,context={'request': request})

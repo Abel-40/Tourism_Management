@@ -11,7 +11,7 @@ class BookingSerializer(serializers.ModelSerializer):
   class Meta:
     model = Booking
     fields = ('user','package','number_of_people','status','total_price','booking_date','detail_url')
-    read_only_fields = ('user','total_price','status','booking_date','detail_url')
+    read_only_fields = ('detail_url',)
     
   def validate(self, attrs):
     package = attrs.get('package')
@@ -19,7 +19,18 @@ class BookingSerializer(serializers.ModelSerializer):
     if package.start_date < timezone.now().date():
         raise serializers.ValidationError("Package start date has already passed.")
     return attrs
-  def get_detail_url(self,obj):
-    return reverse('booking-detial',args=[obj.slug])
+  def get_detail_url(self, obj):
+    return obj.get_absolute_url()
 
-  
+class BookingDetailSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Booking
+        fields = ('user', 'package', 'number_of_people', 'status', 'total_price', 'booking_date')
+        read_only_fields = ('user', 'package', 'number_of_people', 'status', 'total_price', 'booking_date') 
+
+class BookingUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ['number_of_people']  
+    

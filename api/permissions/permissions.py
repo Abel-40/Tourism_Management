@@ -34,3 +34,9 @@ class IsTourGuider(BasePermission):
             except UserProfile.DoesNotExist:
                 return False
         return False       
+class IsBookingOwner(BasePermission):
+   def has_object_permission(self, request, view, obj):
+        user = request.user
+        if user.is_authenticated:
+            return user == obj.user
+        return False
