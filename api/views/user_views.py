@@ -1,5 +1,6 @@
 from rest_framework import viewsets,status
-from rest_framework.permissions import IsAdminUser,IsAuthenticated
+from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAdminUser,IsAuthenticated,AllowAny
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
@@ -14,7 +15,8 @@ from ..serializers.user_serializers import (
   UserDetailSerializer,
   RoleAssignSerializer,
   UpdateUserInfoSerializer,
-  UpadateUserProfileSerializer
+  UpadateUserProfileSerializer,
+  UserDeletionSerializer,
   
   )
 from django.shortcuts import get_object_or_404
@@ -36,9 +38,8 @@ class TourGuiderApiView(viewsets.ModelViewSet):
   
   
 class UserCreationApiView(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]  # Default for all actions
     lookup_field = 'slug'
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'],permission_classes=[AllowAny],authentication_classes=[])
     def signup(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -130,3 +131,37 @@ class UserCreationApiView(viewsets.ViewSet):
             return Response({"message": "UserProfile updated successfully!"},status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
          
+
+    @action(detail=False, methods=['delete'], permission_classes=[IsAuthenticated])
+    def delete_account(self, request):
+        serializer = UserDeletionSerializer(data=request.data)
+        print(f"Authenticated user: {request.user}")
+        if not request.user.is_authenticated:
+            return Response({'message': 'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if serializer.is_valid():
+            password = serializer.validated_data['password']
+            user = request.user
+            if not user.check_password(password):
+                return Response({'message': 'Please enter the correct password'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user.delete()  
+            return Response({'message': 'User account deleted successfully!'}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminUser])
+    def get_tourstaffs(self, request):
+        tourstaffs = User.objects.filter(userprofile__role=UserProfile.Role.TOUR_STAFF)
+        serializer = UserSerializer(tourstaffs, many=True)  # Ensure you pass `many=True`
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminUser])
+    def get_customers(self, request):
+        customers = User.objects.filter(userprofile__role=UserProfile.Role.CUSTOMER)
+        serializer = UserSerializer(customers, many=True)  # Ensure you pass `many=True`
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+

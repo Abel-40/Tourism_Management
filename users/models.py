@@ -48,10 +48,6 @@ class User(AbstractUser):
   
   
 class UserProfile(models.Model):
-  class CustomerManager(models.Manager):
-    def get_queryset(self):
-      return super().get_queryset().filter(role = UserProfile.Role.CUSTOMER)
-  
   class Role(models.TextChoices):
     ADMIN = 'AD','Admin'
     CUSTOMER = 'CU','Customer'
@@ -65,7 +61,6 @@ class UserProfile(models.Model):
   #custom object to filter only Customers and default object
   
   objects = models.Manager()
-  customers = CustomerManager()
   
   def __str__(self):
     return self.user.username
@@ -73,7 +68,7 @@ class UserProfile(models.Model):
   
 class TourGuider(models.Model) :
   user_profile = models.OneToOneField(UserProfile,on_delete=models.CASCADE,related_name='tour_guider')
-  assigned_packages = models.ManyToManyField(Packages,related_name='tour_guiders')
+  assigned_packages = models.ManyToManyField(Packages,related_name='tour_guiders',blank=True)
   note = models.TextField()
   objects = models.Manager()
   
