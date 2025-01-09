@@ -3,7 +3,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAdminUser,IsAuthenticated,AllowAny
-from proto_tourism.api.permissions.permissions import IsTourGuider
+from bookings.permissions import IsTourGuider
 from rest_framework.decorators import action,permission_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response

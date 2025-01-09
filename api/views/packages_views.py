@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404,get_list_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser,IsAuthenticated,AllowAny
-from proto_tourism.api.permissions.permissions import IsAdminOrTourStaff,IsCustomer,IsTourGuider
+from bookings.permissions import IsAdminOrTourStaff,IsCustomer,IsTourGuider
 from ..serializers.packages_serializers import (
   PackageSerializer,
   Packages,

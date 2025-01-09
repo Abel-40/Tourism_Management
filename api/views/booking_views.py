@@ -7,16 +7,15 @@ from ..serializers.booking_serializer import (
 )
 from bookings.views import send_payment_confirmation_email
 from django.shortcuts import get_object_or_404,get_list_or_404
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from ..serializers.bankist_serializer import BankistSerializer,Bankist,TransactionHistory
+from ..serializers.bankist_serializer import Bankist,TransactionHistory
 from rest_framework import viewsets,status
 from packages.models import Packages
 from rest_framework.decorators import action
 from datetime import timedelta
 from django.utils import timezone
-from rest_framework.permissions import IsAdminUser,IsAuthenticated,AllowAny
-from proto_tourism.api.permissions.permissions import IsAdminOrTourStaff,IsCustomer,IsBookingOwner
+from rest_framework.permissions import IsAuthenticated
+from bookings.permissions import IsCustomer,IsBookingOwner
 
 
 
