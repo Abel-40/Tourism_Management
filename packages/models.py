@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
+from django.urls import reverse
 # from users.models import User
 # Create your models here.
 
@@ -32,7 +33,7 @@ class Packages(models.Model):
   def save(self,*args, **kwargs):
     if not self.slug:
       self.slug = slugify(self.package_name)
-      super().save(*args,**kwargs)
+    super().save(*args,**kwargs)
   
   
   objects = models.Manager()
@@ -46,8 +47,13 @@ class Packages(models.Model):
   def __str__(self):
     return self.package_name
   
+  def get_absolute_url(self):
+      return reverse("package-detail", kwargs={"slug":self.slug})
+  
+  
+  
 class PackageImages(models.Model) :
-  package = models.ForeignKey(to=Packages,on_delete=models.CASCADE,related_name='images')
+  package = models.ForeignKey(to=Packages,on_delete=models.CASCADE,related_name='package_images')
   image = models.ImageField(upload_to='package_image/')
   caption = models.CharField(max_length=255,blank=True,null=True)
 
@@ -58,7 +64,7 @@ class SubPackages(models.Model):
     subpackage_name = models.CharField(max_length=100)
     subpackage_description = models.TextField()
     package = models.ForeignKey(to=Packages,on_delete=models.CASCADE,related_name='subpackages')
-    subpackage_image = models.ImageField(upload_to='subpackage_image/')
+    subpackage_image = models.ImageField(upload_to='subpackage_image/',blank=True,null=True)
     
   
     def __str__(self):

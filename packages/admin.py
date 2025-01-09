@@ -9,8 +9,9 @@ class PackagesAdmin(admin.ModelAdmin):
   list_filter = ('status', 'location', 'created', 'updated')
   search_fields = ('package_name', 'location')  
 
-
+class SubpackageAdmin(admin.ModelAdmin):
+  list_display = ('id','package','subpackage_description','subpackage_image')
 admin.site.register(Packages,PackagesAdmin)
-admin.site.register(SubPackages)
+admin.site.register(SubPackages,SubpackageAdmin)
 admin.site.register(PackageReview)
 admin.site.register(PackageImages)

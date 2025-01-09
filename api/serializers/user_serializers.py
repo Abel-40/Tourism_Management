@@ -7,7 +7,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
   class Meta:
     model = UserProfile
     fields = ['user','address','profile_picture','phone_number']
-    read_only_fields = ('user')
+    read_only_fields = ('user',)
 
 class UserSerializer(serializers.ModelSerializer):
     detail_url = serializers.SerializerMethodField()  # Correct field name
@@ -21,7 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
             'password',
             'detail_url',  # Corrected field name
         ]
-        read_only_fields = ( 'detail_url')
+        read_only_fields = ( 'detail_url',)
         extra_kwargs = {'password':{'write_only':True}}
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
@@ -49,11 +49,11 @@ class TourGuiderSerializer(serializers.ModelSerializer):
         return confirmed_bookings.values('user__username', 'user__email', 'package__package_name')
 
 class UserDetailSerializer(serializers.ModelSerializer):
-    userprofile = UserProfileSerializer(read_only=True)  # Explicitly read-only
+    userprofile = UserProfileSerializer(read_only=True)
     book_history = BookingSerializer(many=True, read_only=True)
     class Meta:
         model = User
-        fields = (             
+        fields = (
             'email',
             'username',
             'first_name',
@@ -61,7 +61,14 @@ class UserDetailSerializer(serializers.ModelSerializer):
             'userprofile',
             'book_history',
         )
-        read_only_fields = fields  # All fields are read-only
+        read_only_fields = [
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'userprofile',
+            'book_history',
+        ]
 
 
 class RoleAssignSerializer(serializers.Serializer):
@@ -100,3 +107,7 @@ class UpadateUserProfileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         validated_data.pop('role',None)
         return super().update(instance,validated_data)
+      
+class UserDeletionSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=100)
+    

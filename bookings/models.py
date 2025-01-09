@@ -2,6 +2,7 @@ from django.db import models
 from packages.models import Packages
 from users.models import User,TourGuider
 from django.utils.text import slugify
+from django.urls import reverse
 # Create your models here.
 
 class Booking(models.Model):
@@ -30,6 +31,8 @@ class Booking(models.Model):
     if not self.slug:
       self.slug = slugify(f"{self.user.username}-book-{self.package.package_name}")
     return super().save(*args,**kwargs)
+  def get_absolute_url(self):
+      return reverse("book-detail", kwargs={"slug": self.slug})
   
   class Meta:
     constraints = [

@@ -1,9 +1,14 @@
 from rest_framework import viewsets,status
-from rest_framework.permissions import IsAdminUser,IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.decorators import action
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAdminUser,IsAuthenticated,AllowAny
+from bookings.permissions import IsTourGuider
+from rest_framework.decorators import action,permission_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
+from django.contrib.auth import authenticate
+from packages.models import Packages
 from ..serializers.user_serializers import (
   UserSerializer,
   User,
@@ -14,7 +19,8 @@ from ..serializers.user_serializers import (
   UserDetailSerializer,
   RoleAssignSerializer,
   UpdateUserInfoSerializer,
-  UpadateUserProfileSerializer
+  UpadateUserProfileSerializer,
+  UserDeletionSerializer
   
   )
 from django.shortcuts import get_object_or_404
@@ -36,9 +42,8 @@ class TourGuiderApiView(viewsets.ModelViewSet):
   
   
 class UserCreationApiView(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]  # Default for all actions
     lookup_field = 'slug'
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'],permission_classes=[AllowAny],authentication_classes=[])
     def signup(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -62,6 +67,36 @@ class UserCreationApiView(viewsets.ViewSet):
                     status=status.HTTP_408_REQUEST_TIMEOUT,
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny], authentication_classes=[])
+    def signin(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not email or not password:
+            return Response(
+                {"error": "Email and password are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Authenticate the user
+        user = authenticate(request, username=email, password=password)
+        if user is None:
+            return Response(
+                {"error": "Invalid email or password."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+                "message": "Login successful.",
+            },
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def get_users(self, request):
@@ -130,3 +165,74 @@ class UserCreationApiView(viewsets.ViewSet):
             return Response({"message": "UserProfile updated successfully!"},status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
          
+
+    @action(detail=False, methods=['delete'], permission_classes=[IsAuthenticated])
+    def delete_account(self, request):
+        serializer = UserDeletionSerializer(data=request.data)
+        print(f"Authenticated user: {request.user}")
+        if not request.user.is_authenticated:
+            return Response({'message': 'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if serializer.is_valid():
+            password = serializer.validated_data['password']
+            user = request.user
+            if not user.check_password(password):
+                return Response({'message': 'Please enter the correct password'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user.delete()  
+            return Response({'message': 'User account deleted successfully!'}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminUser])
+    def get_tourstaffs(self, request):
+        tourstaffs = User.objects.filter(userprofile__role=UserProfile.Role.TOUR_STAFF)
+        serializer = UserSerializer(tourstaffs, many=True)  # Ensure you pass `many=True`
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminUser])
+    def get_customers(self, request):
+        customers = User.objects.filter(userprofile__role=UserProfile.Role.CUSTOMER)
+        serializer = UserSerializer(customers, many=True)  # Ensure you pass `many=True`
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
+class TourGuiderViewSet(viewsets.ViewSet):
+    permission_classes = [IsTourGuider]
+
+    @action(detail=False, methods=['get'])
+    def tg_packages_booking_confirmed_users(self, request):
+        try:
+            tour_guider = TourGuider.objects.get(user=request.user)
+        except TourGuider.DoesNotExist:
+            return Response({"error": "Tour Guider profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = TourGuiderSerializer(tour_guider)
+        return Response(serializer.data.get('confirmed_bookings'), status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['patch'])
+    def add_note(self, request):
+        try:
+            tour_guider = TourGuider.objects.get(user=request.user)
+        except TourGuider.DoesNotExist:
+            return Response({"error": "Tour Guider profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        package_id = request.data.get('package_id')
+        note = request.data.get('note')
+
+        if not package_id or not note:
+            return Response({"error": "Both 'package_id' and 'note' are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            package = Packages.objects.get(id=package_id, assigned_to=tour_guider)
+        except Packages.DoesNotExist:
+            return Response({"error": "Package not found or not assigned to you."}, status=status.HTTP_404_NOT_FOUND)
+
+        package.note = note
+        package.save()
+
+        return Response({"message": "Note added successfully."}, status=status.HTTP_200_OK)
