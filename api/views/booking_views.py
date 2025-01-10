@@ -9,6 +9,7 @@ from bookings.views import send_payment_confirmation_email
 from django.shortcuts import get_object_or_404,get_list_or_404
 from rest_framework.response import Response
 from ..serializers.bankist_serializer import Bankist,TransactionHistory
+from users.models import UserProfile
 from rest_framework import viewsets,status
 from packages.models import Packages
 from rest_framework.decorators import action
@@ -18,11 +19,8 @@ from rest_framework.permissions import IsAuthenticated
 from bookings.permissions import IsCustomer,IsBookingOwner
 
 
-
-
 class BookingApiView(viewsets.ViewSet):
-    COMPANY_BANK_ACCOUNT_NUMBER = 50003254599039
-    COMPANY_NAME = 'Visit Ethiopia'
+    COMPANY_NAME = 'Explore with abel'
     lookup_field = 'slug'
     @action(detail=False, methods=['post'], permission_classes=[IsCustomer])
     def book(self, request):
@@ -62,6 +60,14 @@ class BookingApiView(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[IsBookingOwner])
     def booking_payment(self, request):
+        admin_user_profile = UserProfile.objects.filter(role=UserProfile.Role.ADMIN).first()
+        
+        if admin_user_profile is None:
+            return Response({"error": "Admin user profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Fetching the bank account of the admin
+        admin_bank_account = Bankist.objects.get(user_profile=admin_user_profile)
+        COMPANY_BANK_ACCOUNT_NUMBER = admin_bank_account.account_number
         current_user_bookings = Booking.objects.filter(user=request.user)
         user_email = request.user.email
         username = request.user.username
