@@ -21,7 +21,7 @@ from bookings.permissions import IsCustomer,IsBookingOwner
 
 
 class BookingApiView(viewsets.ViewSet):
-    COMPANY_BANK_ACCOUNT_NUMBER = 50003442236121
+    COMPANY_BANK_ACCOUNT_NUMBER = 50003254599039
     COMPANY_NAME = 'Visit Ethiopia'
     lookup_field = 'slug'
     @action(detail=False, methods=['post'], permission_classes=[IsCustomer])
@@ -134,17 +134,18 @@ class BookingApiView(viewsets.ViewSet):
 
             sender_transaction.related_transaction = receiver_transaction
             current_booking_package.status = Booking.Status.CONFIRMED
-            current_booking_package.save()
-            sender_transaction.save()
-            sender_bank_account.save()
-            receiver_bank_account.save()
-            send_payment_confirmation_email(user_email, username, package_name, price, current_date)
-            return Response(
-                {"message": "Transaction successful",
-                 "balance": f"Your '{package_name}' booking is confirmed.",
-                 "receiver": f"Money successfully sent to {self.COMPANY_NAME}"},
-                status=status.HTTP_200_OK
-            )
+            if send_payment_confirmation_email(user_email, username,package_name, price, current_date):
+                current_booking_package.save()
+                sender_transaction.save()
+                sender_bank_account.save()
+                receiver_bank_account.save()
+                send_payment_confirmation_email(user_email, username, package_name, price, current_date)
+                return Response(
+                    {"message": "Transaction successful",
+                    "balance": f"Your '{package_name}' booking is confirmed.",
+                    "receiver": f"Money successfully sent to {self.COMPANY_NAME}"},
+                    status=status.HTTP_200_OK
+                )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
       

@@ -19,12 +19,18 @@ class BankistViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'])
     def create_bank_account(self, request):
-        serializer = BankistSerializer(data=request.data)
+        serializer = BankistSerializer(data=request.data,context={'request':request})
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            user_profile = request.user.userprofile
+            bank_account = Bankist.objects.filter(user_profile=user_profile).first()
+            if not bank_account:
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message":"you already have bank account please use your account"},status=status.HTTP_400_BAD_REQUEST)
+            
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    #bank account 50002414820893
 
     @action(detail=False, methods=['get'])
     def check_account(self, request):

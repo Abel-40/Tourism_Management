@@ -18,6 +18,15 @@ from ..serializers.user_serializers import TourGuider,User,UserProfile
 
 class PackageApiView(viewsets.ViewSet):
   lookup_field = 'slug'
+  @action(detail=False, methods=['post'], permission_classes=[IsAdminOrTourStaff])
+  def add_package(self, request):
+        serializer = PackageSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Package added successfully!'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+      
+      
   @action(detail=False,methods=['get'],permission_classes=[AllowAny],authentication_classes=[])
   def get_packages(self,request):
     packages = Packages.published.all()

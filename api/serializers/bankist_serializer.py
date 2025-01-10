@@ -35,6 +35,10 @@ class BankistSerializer(serializers.ModelSerializer):
   class Meta:
     model = Bankist
     fields = ('account_number','user_profile','balance','pin','transaction_history')
-    read_only_fields = ('account_number',)
-# "50001137910872"
+    read_only_fields = ('account_number','user_profile','transaction_history','balance')
+    extra_kwargs = {'pin':{'write_only':True}}
+  def create(self, validated_data):
+      user_profile = self.context['request'].user.userprofile
+      validated_data['user_profile'] = user_profile
+      return super().create(validated_data)
 

@@ -11,7 +11,7 @@ class BookingSerializer(serializers.ModelSerializer):
   class Meta:
     model = Booking
     fields = ('user','package','number_of_people','status','total_price','booking_date','detail_url')
-    read_only_fields = ('detail_url',)
+    read_only_fields = ('detail_url','user','staus','total_price','booking_date')
     
   def validate(self, attrs):
     package = attrs.get('package')

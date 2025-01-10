@@ -9,7 +9,7 @@ def account_num_genrator():
 class Bankist(models.Model):
   account_number = models.CharField(unique=True,max_length=14,editable=False)
   user_profile = models.OneToOneField(UserProfile,related_name='bank_account',on_delete=models.CASCADE)
-  balance = models.DecimalField(max_digits=10,decimal_places=2)
+  balance = models.DecimalField(max_digits=10,decimal_places=2,default=0.00)
   pin = models.CharField(max_length=128)
   
   objects = models.Manager()

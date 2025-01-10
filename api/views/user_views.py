@@ -12,7 +12,6 @@ from packages.models import Packages
 from ..serializers.user_serializers import (
   UserSerializer,
   User,
-  UserProfileSerializer,
   UserProfile,
   TourGuiderSerializer,
   TourGuider,
@@ -191,7 +190,7 @@ class TourGuiderViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get'])
     def tg_packages_booking_confirmed_users(self, request):
         try:
-            tour_guider = TourGuider.objects.get(user=request.user)
+            tour_guider = TourGuider.objects.get(user_profile=request.user.userprofile)
         except TourGuider.DoesNotExist:
             return Response({"error": "Tour Guider profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
