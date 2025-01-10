@@ -14,13 +14,17 @@ from pathlib import Path
 import os
 import environ
 from datetime import timedelta
+from urllib.parse import urlparse
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 env = environ.Env()
 env.read_env(BASE_DIR/'.env')
+DATABASE_URL = env('DATABASE_URL')
 
+# Parse the URL using urlparse to extract the database credentials
+parsed_db_url = urlparse(DATABASE_URL)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -86,13 +90,12 @@ WSGI_APPLICATION = 'proto_tourism.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE':'django.db.backends.postgresql',
-        'NAME': env('DATABASE_NAME'),
-        'USER': env('USER'),
-        'PASSWORD':env('PASSWORD'),
-        'HOST':env('HOST'),
-        'PORT':env('PORT')
-        
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': parsed_db_url.path[1:], 
+        'USER': parsed_db_url.username,
+        'PASSWORD': parsed_db_url.password,
+        'HOST': parsed_db_url.hostname,
+        'PORT': parsed_db_url.port,
     }
 }
 
