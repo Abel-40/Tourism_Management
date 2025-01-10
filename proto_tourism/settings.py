@@ -28,9 +28,9 @@ env.read_env(BASE_DIR/'.env')
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['tourism-management-1-atop.onrender.com','localhost']
 
 
 # Application definition
@@ -57,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware'
 ]
 
 ROOT_URLCONF = 'proto_tourism.urls'
@@ -85,7 +86,7 @@ WSGI_APPLICATION = 'proto_tourism.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE':'django.db.backends.postgresql',
         'NAME': env('DATABASE_NAME'),
         'USER': env('USER'),
         'PASSWORD':env('PASSWORD'),
@@ -142,7 +143,7 @@ AUTH_USER_MODEL = 'users.User'
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 MEDIA_URL = '/media/'
 
-
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = env('COMPANY_EMAIL')
 EMAIL_HOST_PASSWORD = env('EMAIL_PASSWORD')
