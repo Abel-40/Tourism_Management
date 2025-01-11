@@ -12,19 +12,16 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 import environ
 from datetime import timedelta
-from urllib.parse import urlparse
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 env = environ.Env()
 env.read_env(BASE_DIR/'.env')
-DATABASE_URL = env('DATABASE_URL')
 
-# Parse the URL using urlparse to extract the database credentials
-parsed_db_url = urlparse(DATABASE_URL)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -32,9 +29,9 @@ parsed_db_url = urlparse(DATABASE_URL)
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = True
 
-ALLOWED_HOSTS = ['tourism-management-1-atop.onrender.com','localhost']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -61,7 +58,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware'
 ]
 
 ROOT_URLCONF = 'proto_tourism.urls'
@@ -90,15 +86,19 @@ WSGI_APPLICATION = 'proto_tourism.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': parsed_db_url.path[1:], 
-        'USER': parsed_db_url.username,
-        'PASSWORD': parsed_db_url.password,
-        'HOST': parsed_db_url.hostname,
-        'PORT': parsed_db_url.port,
+        # 'ENGINE': 'django.db.backends.mysql',
+        # 'NAME': env('DATABASE_NAME'),
+        # 'USER': env('USER'),
+        # 'PASSWORD':env('PASSWORD'),
+        # 'HOST':env('HOST'),
+        # 'PORT':env('PORT')
+        
     }
 }
 
+# 
+
+DATABASES["default"] = dj_database_url.parse("postgresql://root:Co9mIceOI3iIm3QozcfjBH3bZYZqMzrR@dpg-cu0qbud2ng1s73e1qgdg-a.oregon-postgres.render.com/tourism_managment")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -146,7 +146,7 @@ AUTH_USER_MODEL = 'users.User'
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 MEDIA_URL = '/media/'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = env('COMPANY_EMAIL')
 EMAIL_HOST_PASSWORD = env('EMAIL_PASSWORD')
