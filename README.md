@@ -71,7 +71,7 @@ This project is a **web-based Tourism Management System** designed to streamline
 * `api/user/get_users/` - View all users
 * `api/package/add_packages/` - Add packages
 
-[Full API endpoint details available in the documentation.](#)
+[Full API endpoint details available in the documentation.](https://docs.google.com/document/d/13YSTNyrNV6J1X98Uq3UH46GRUz-maALM3VcqPJsnsdI/edit?usp=sharing)
 
 ## How to Run the Project
 
@@ -93,6 +93,10 @@ python manage.py migrate
 python manage.py runserver
 ```
 5. Access the app at `http://127.0.0.1:8000`.
+
+
+## check the API
+1.[Package based tourism management system](https://tourism-management-1-atop.onrender.com)
 
 ## Project Roadmap
 1. Build the foundational features with small iterations.
