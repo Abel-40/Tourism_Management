@@ -2,7 +2,7 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 import environ
-from ...models import UserProfile, 
+from users.models import UserProfile 
 from Bankist.models import Bankist
 from django.contrib.auth.hashers import make_password, check_password
 
