@@ -94,10 +94,13 @@ python manage.py runserver
 ```
 5. Access the app at `http://127.0.0.1:8000`.
 
-
-## check the API
+## check deployed API 
 1.[Package based tourism management system](https://tourism-management-1-atop.onrender.com)
-
+2. first create a user account use your email(please use correct email account) account to register as a customer or
+3. If you want to log in as an admin user use the below credentials 
+  email: addis0132@gmail.com
+  pass: abel1234
+4. now you can create packages and assign roles for customers read the API documentation to check all user type permissions.
 ## Project Roadmap
 1. Build the foundational features with small iterations.
 2. Ensure functionality with thorough testing after each module.
