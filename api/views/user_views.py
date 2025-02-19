@@ -7,7 +7,6 @@ from bookings.permissions import IsTourGuider
 from rest_framework.decorators import action,permission_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
-from django.contrib.auth import authenticate
 from packages.models import Packages
 from ..serializers.user_serializers import (
   UserSerializer,
@@ -38,18 +37,17 @@ class UserCreationApiView(viewsets.ViewSet):
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
+        try:
             if send_welcome_email(email, username):
-                serializer.save()
-                return Response(
-                    {"message": "Account created successfully"},
-                    status=status.HTTP_201_CREATED,
-                )
-            else:
-                return Response(
-                    {"timeout": "Please check your internet connection"},
-                    status=status.HTTP_408_REQUEST_TIMEOUT,
-                )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                self.perform_create(serializer)
+                return Response({"message": "Account created successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Please check your internet connection"}, status=status.HTTP_408_REQUEST_TIMEOUT)
+        except Exception as e:
+            return Response({"message": f"Email sending failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def perform_create(self, serializer):
+        serializer.save()
+        print('object saved to database')
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny], authentication_classes=[])
     def signin(self, request):

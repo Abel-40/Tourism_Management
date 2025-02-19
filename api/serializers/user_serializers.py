@@ -10,7 +10,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     read_only_fields = ('user',)
 
 class UserSerializer(serializers.ModelSerializer):
-    detail_url = serializers.SerializerMethodField()  # Correct field name
+    detail_url = serializers.SerializerMethodField() 
     class Meta:
         model = User
         fields = [
@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'password',
-            'detail_url',  # Corrected field name
+            'detail_url',  
         ]
         read_only_fields = ( 'detail_url',)
         extra_kwargs = {'password':{'write_only':True}}
@@ -102,7 +102,7 @@ class UpadateUserProfileSerializer(serializers.ModelSerializer):
         fields = ['address','profile_picture','phone_number','role']
     def validate(self, attrs):
         if 'role' in attrs:
-            raise serializers.ValidationError({"error": "There is no field called role. Please try again."})
+            raise serializers.ValidationError({"error": "role field can't be updated. Please try updating other fields."})
         return attrs
     def update(self, instance, validated_data):
         validated_data.pop('role',None)
